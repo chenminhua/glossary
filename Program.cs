@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+
+
 namespace GlossaryNS
 {
 
@@ -11,7 +13,8 @@ namespace GlossaryNS
         // TODO concurrency
         public void add(string s1, string s2)
         {
-            if (!dict.ContainsKey(s1)) {
+            if (!dict.ContainsKey(s1))
+            {
                 dict[s1] = new List<string>();
             }
             dict[s1].Add(s2);
@@ -22,19 +25,27 @@ namespace GlossaryNS
             if (!dict.ContainsKey(s))
             {
                 return new List<string>();
-            } else
+            }
+            else
             {
                 return dict[s];
             }
         }
     }
+
     class Program
     {
         static void Main(string[] args)
         {
-            Glossary s = new Glossary();
-            s.add("srp", "storage resource provider");
-            Console.WriteLine(s.query("srp")[0]);
+            if (args.Length < 2) {
+                throw new System.ArgumentException("try these: \n" +  
+                                "    glossary add srp='storage resource provider' \n" + 
+                                "  or \n" +
+                                "    glossary query srp");
+            }
+            Console.WriteLine(args[0]);
+            Console.WriteLine(args[1]);
         }
+        
     }
 }
