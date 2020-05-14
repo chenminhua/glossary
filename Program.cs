@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 using System.IO;
-using System.Linq;
+using System.Data.SQLite;
 
 namespace GlossaryNS
 {
@@ -49,36 +49,16 @@ namespace GlossaryNS
             Console.WriteLine(args[0]);
             Console.WriteLine(args[1]);
 
-            // xml
-            var filename = "glossary.xml";
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var purchaseOrderFilepath = Path.Combine(currentDirectory, filename);
+            string cs = "Data Source=:memory:";
+            string stm = "SELECT SQLITE_VERSION()";
 
-            // no this file, create
-            if (true)
-            {
-                XElement contacts =
-                    new XElement("Contacts",
-                        new XElement("Contact",
-                            new XElement("Name", "Patrick Hines"),
-                            new XElement("Phone", "206-555-0144",
-                                new XAttribute("Type", "Home")),
-                            new XElement("phone", "425-555-0145",
-                                new XAttribute("Type", "Work")),
-                            new XElement("Address",
-                                new XElement("Street1", "123 Main St"),
-                                new XElement("City", "Mercer Island"),
-                                new XElement("State", "WA"),
-                                new XElement("Postal", "68042")
-                            )
-                        )
-                    );
-            }
+            using var con = new SQLiteConnection(cs);
+            con.Open();
 
-            //XElement purchaseOrder = XElement.Load(purchaseOrderFilepath);
+            using var cmd = new SQLiteCommand(stm, con);
+            string version = cmd.ExecuteScalar().ToString();
 
-            // IEnumerable<string> partNos = from item in purchaseOrder.Descendants("Item")
-            //                               select (string)item.Attribute("PartNumber");
+            Console.WriteLine($"SQLite version: {version}");
         }
 
     }
