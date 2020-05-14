@@ -49,16 +49,17 @@ namespace GlossaryNS
             Console.WriteLine(args[0]);
             Console.WriteLine(args[1]);
 
-            string cs = "Data Source=:memory:";
-            string stm = "SELECT SQLITE_VERSION()";
+            // string dsstr = "Data Source=:memory:"
+            var filename = "test.db";
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var dsstr = $"URI=file:{Path.Combine(currentDirectory, filename)}";
+            
+            Console.WriteLine(dsstr);
+            //string dsstr = "URI=file:.\test.db";
+            SQLiteConn conn = new SQLiteConn(dsstr);
+            Console.WriteLine($"SQLite version: {conn.getVersion()}");
 
-            using var con = new SQLiteConnection(cs);
-            con.Open();
-
-            using var cmd = new SQLiteCommand(stm, con);
-            string version = cmd.ExecuteScalar().ToString();
-
-            Console.WriteLine($"SQLite version: {version}");
+            conn.createTable();
         }
 
     }
