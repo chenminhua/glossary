@@ -7,31 +7,59 @@ using System.Data.SQLite;
 namespace GlossaryNS
 {
 
-    public class Glossary
+    public class Glossary: IDisposable
     {
-        Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
+       
+        public string connstr;
+        public SQLiteConnection conn;
+
+        public Glossary(string connstr) {
+            this.connstr = connstr;
+            conn = new SQLiteConnection(connstr);
+            connect();
+        }
+
+        public void connect() {
+            this.conn.Open();
+        }
+
+        public string getVersion() {
+            using var cmd = new SQLiteCommand("SELECT SQLITE_VERSION()", conn);
+            string version = cmd.ExecuteScalar().ToString();
+            return version;
+        }
+
+        public void createTable() {
+            using var cmd = new SQLiteCommand(conn);
+            cmd.CommandText = @"CREATE TABLE glossary(k TEXT, v TEXT)";
+            cmd.ExecuteNonQuery();
+        }
+
+        public void Dispose() {
+            conn.Dispose();
+        }
 
         // TODO concurrency
-        public void add(string s1, string s2)
-        {
-            if (!dict.ContainsKey(s1))
-            {
-                dict[s1] = new List<string>();
-            }
-            dict[s1].Add(s2);
-        }
+        // public void add(string s1, string s2)
+        // {
+        //     if (!dict.ContainsKey(s1))
+        //     {
+        //         dict[s1] = new List<string>();
+        //     }
+        //     dict[s1].Add(s2);
+        // }
 
-        public List<String> query(string s)
-        {
-            if (!dict.ContainsKey(s))
-            {
-                return new List<string>();
-            }
-            else
-            {
-                return dict[s];
-            }
-        }
+        // public List<String> query(string s)
+        // {
+        //     if (!dict.ContainsKey(s))
+        //     {
+        //         return new List<string>();
+        //     }
+        //     else
+        //     {
+        //         return dict[s];
+        //     }
+        // }
     }
 
     class Program
@@ -56,7 +84,7 @@ namespace GlossaryNS
             
             Console.WriteLine(dsstr);
             //string dsstr = "URI=file:.\test.db";
-            SQLiteConn conn = new SQLiteConn(dsstr);
+            Glossary conn = new Glossary(dsstr);
             Console.WriteLine($"SQLite version: {conn.getVersion()}");
 
             conn.createTable();
