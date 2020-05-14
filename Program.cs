@@ -11,6 +11,7 @@ namespace GlossaryNS
     {
        
         public string connstr;
+        public const string tablename = "glossary";
         public SQLiteConnection conn;
 
         public Glossary(string connstr) {
@@ -31,35 +32,35 @@ namespace GlossaryNS
 
         public void createTable() {
             using var cmd = new SQLiteCommand(conn);
-            cmd.CommandText = @"CREATE TABLE glossary(k TEXT, v TEXT)";
+            cmd.CommandText = $"CREATE TABLE {tablename}(k TEXT, v TEXT)";
             cmd.ExecuteNonQuery();
+        }
+
+        public void add(string k, string v) {
+            using var cmd = new SQLiteCommand(conn);
+            cmd.CommandText = $"INSERT INTO {tablename}(k, v) VALUES(@k, @v)";
+            cmd.Parameters.AddWithValue("@k", k);
+            cmd.Parameters.AddWithValue("@v", v);
+            cmd.Prepare();
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<string> query(string k) {
+            using var cmd = new SQLiteCommand($"SELECT * FROM {tablename} WHERE k = @k", conn);
+            cmd.Parameters.AddWithValue("@k", k);
+            cmd.Prepare();
+            using SQLiteDataReader rdr = cmd.ExecuteReader();
+            var res = new List<string>();
+            while (rdr.Read()) {
+                res.Add(rdr.GetString(1));
+            }
+            return res;
         }
 
         public void Dispose() {
             conn.Dispose();
         }
 
-        // TODO concurrency
-        // public void add(string s1, string s2)
-        // {
-        //     if (!dict.ContainsKey(s1))
-        //     {
-        //         dict[s1] = new List<string>();
-        //     }
-        //     dict[s1].Add(s2);
-        // }
-
-        // public List<String> query(string s)
-        // {
-        //     if (!dict.ContainsKey(s))
-        //     {
-        //         return new List<string>();
-        //     }
-        //     else
-        //     {
-        //         return dict[s];
-        //     }
-        // }
     }
 
     class Program
@@ -83,11 +84,12 @@ namespace GlossaryNS
             var dsstr = $"URI=file:{Path.Combine(currentDirectory, filename)}";
             
             Console.WriteLine(dsstr);
-            //string dsstr = "URI=file:.\test.db";
             Glossary conn = new Glossary(dsstr);
             Console.WriteLine($"SQLite version: {conn.getVersion()}");
 
             conn.createTable();
+            conn.add("srp", "storage resource provider");
+            Console.WriteLine(conn.query("srp")[0]);
         }
 
     }
